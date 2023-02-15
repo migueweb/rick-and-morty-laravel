@@ -9,6 +9,10 @@ use GuzzleHttp\Client;
 
 class CharacterController extends Controller
 {
+    // Rick and Morty API Base URL 
+    private string $apiBaseURl = "https://rickandmortyapi.com/api/character/";
+    
+
     /**
      * Display a listing of the resource.
      *
@@ -17,7 +21,7 @@ class CharacterController extends Controller
     public function index()
     {
         $client = new Client();
-        $response = $client->get('https://rickandmortyapi.com/api/character');
+        $response = $client->get($this->apiBaseURl);
         $characters = json_decode($response->getBody(), true);
         $characters = $characters['results'];
         return view('characters.index', ['characters' => $characters]);
@@ -40,28 +44,25 @@ class CharacterController extends Controller
      */
     public function favorites()
     {
-
         $userId = Auth::id();
 
-        /* Get characters from DB */
+        //Get characters 
         $favoritesCharacters = Favorites_characters::where('user_id', $userId)->get();
         
-        /* Convert Character collection on array*/
+        // Convert Character collection on array
         $charactersId = [];
-
         foreach ($favoritesCharacters as $character) {
             array_push($charactersId, $character['character_id']);
         }
 
         $charactersLenght = count($charactersId);
 
-        /* Convert characters ID array on string */
+        // Convert characters ID array on string
         $charactersId = implode(',', $charactersId);
 
-        /* Get Characters from the API*/
+        // Get Characters from the API
         $client = new Client();
- 
-        $response = $client->get("https://rickandmortyapi.com/api/character/$charactersId");
+        $response = $client->get($this->apiBaseURl . $charactersId);
         $characters = json_decode($response->getBody(), true);
 
         return view('dashboard', ['characters' => $characters, 'charactersLenght' => $charactersLenght]);
@@ -99,7 +100,7 @@ class CharacterController extends Controller
     public function show($id)
     {
         $client = new Client();
-        $response = $client->get("https://rickandmortyapi.com/api/character/$id");
+        $response = $client->get($this->apiBaseURl . $id);
         $character = json_decode($response->getBody(), true);
         
         return view('characters.show', ['character' => $character]);
@@ -136,8 +137,7 @@ class CharacterController extends Controller
      */
     public function destroy($id)
     {
-        $favoriteCharacter = Favorites_characters::where('character_id',$id)->delete();
-
+        Favorites_characters::where('character_id',$id)->delete();
         return redirect()->route('dashboard');
     }
 }
