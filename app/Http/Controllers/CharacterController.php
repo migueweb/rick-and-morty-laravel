@@ -137,7 +137,10 @@ class CharacterController extends Controller
      */
     public function destroy($id)
     {
-        Favorites_characters::where('character_id',$id)->delete();
+        $userId = Auth::id();
+        Favorites_characters::where('character_id',$id)
+                              ->where('user_id', $userId)  
+                              ->delete();
         return redirect()->route('dashboard');
     }
 }
